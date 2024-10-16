@@ -98,18 +98,33 @@ if opcion == "Análisis Básico":
 
 elif opcion == "Filtrado y Descarga":
     st.write("### Filtrar datos:")
-    columnas = df.columns.tolist()
-    columna_filtrar = st.selectbox("Selecciona la columna para filtrar:", columnas, key='filter_col')
+    
+    # Filtros independientes
+    # Filtrar por "País"
+    if 'País' in df.columns:
+        st.subheader("Filtrar por País")
+        pais_filtrar = st.selectbox("Selecciona el País:", ["Todos"] + df['País'].unique().tolist(), key='pais_filter')
+        if pais_filtrar != "Todos":
+            df = df[df['País'] == pais_filtrar]
+
+    # Filtrar por "Género"
+    if 'Género' in df.columns:
+        st.subheader("Filtrar por Género")
+        genero_filtrar = st.selectbox("Selecciona el Género:", ["Todos"] + df['Género'].unique().tolist(), key='genero_filter')
+        if genero_filtrar != "Todos":
+            df = df[df['Género'] == genero_filtrar]
+
+    # Filtrar por otra columna (ejemplo genérico)
+    otras_columnas = [col for col in df.columns if col not in ['País', 'Género']]
+    columna_filtrar = st.selectbox("Selecciona la columna para filtrar:", otras_columnas, key='otra_columna')
     valor_filtrar = st.text_input(f"Ingresa el valor para filtrar en '{columna_filtrar}':")
 
-    if valor_filtrar:
-        # Asegurarse de que la columna existe antes de filtrar
-        if columna_filtrar in df.columns:
-            df_filtrado = df[df[columna_filtrar].astype(str).str.contains(valor_filtrar, case=False, na=False)]
-            st.write(f"#### Datos filtrados por **{columna_filtrar}** que contienen '**{valor_filtrar}**':")
-            st.dataframe(df_filtrado)
+    if valor_filtrar and columna_filtrar in df.columns:
+        df = df[df[columna_filtrar].astype(str).str.contains(valor_filtrar, case=False, na=False)]
 
-            # Descargar CSV filtrado
-            st.markdown(descargar_csv(df_filtrado), unsafe_allow_html=True)
-        else:
-            st.warning(f"La columna '{columna_filtrar}' no existe en el DataFrame.")
+    # Mostrar datos filtrados
+    st.write("#### Datos filtrados:")
+    st.dataframe(df)
+
+    # Descargar CSV filtrado
+    st.markdown(descargar_csv(df), unsafe_allow_html=True)

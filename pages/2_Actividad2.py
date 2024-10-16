@@ -1,4 +1,3 @@
-# pages/2_Actividad2.py
 
 import streamlit as st
 import pandas as pd
@@ -31,12 +30,53 @@ else:
         st.error(f"Ocurrió un error al procesar el archivo: {e}")
         st.stop()
 
+# Mostrar los primeros datos para verificar la carga
+st.write("### Datos Cargados:")
+st.write(df.head())
+
+# Mostrar los tipos de datos
+st.write("### Tipos de Datos del DataFrame:")
+st.write(df.dtypes)
+
+# Intentar convertir columnas a numéricas si es posible
+for col in df.columns:
+    df[col] = pd.to_numeric(df[col], errors='ignore')
+
 # Seleccionar solo columnas numéricas
 df_numeric = df.select_dtypes(include=['number'])
 
 if df_numeric.empty:
     st.error("No hay columnas numéricas en el DataFrame para calcular la correlación.")
 else:
+    # Aplicar los requerimientos solicitados
+    # 1. Selecciona las filas con índices 5 a 10
+    filas_seleccionadas = df.iloc[5:11]  # 11 es exclusivo
+    st.write("### Filas Seleccionadas (Índices 5 a 10):")
+    st.dataframe(filas_seleccionadas)
+
+    # 2. Selecciona las columnas 'Producto' y 'Precio'
+    if 'Producto' in df.columns and 'Precio' in df.columns:
+        df_productos_precios = filas_seleccionadas[['Producto', 'Precio']]
+        st.write("### Filas Seleccionadas con 'Producto' y 'Precio':")
+        st.dataframe(df_productos_precios)
+    else:
+        st.error("Las columnas 'Producto' o 'Precio' no existen en el DataFrame.")
+
+    # 3. Filtra las filas donde el 'Precio' es mayor que 100
+    df_filtrado_precio = df_productos_precios[df_productos_precios['Precio'] > 100]
+    st.write("### Filas con 'Precio' Mayor que 100:")
+    st.dataframe(df_filtrado_precio)
+
+    # 4. Crea una nueva columna llamada 'Descuento' con un 10% del 'Precio'
+    df_filtrado_precio['Descuento'] = df_filtrado_precio['Precio'] * 0.1
+    st.write("### Filas con 'Descuento' Añadido:")
+    st.dataframe(df_filtrado_precio)
+
+    # 5. Elimina la columna 'Descuento' del DataFrame
+    df_filtrado_precio.drop(columns=['Descuento'], inplace=True)
+    st.write("### Filas Después de Eliminar la Columna 'Descuento':")
+    st.dataframe(df_filtrado_precio)
+
     st.sidebar.header("Opciones de Análisis Avanzado")
     opcion = st.sidebar.selectbox("Selecciona una opción:", 
                                   ["Correlación", 
